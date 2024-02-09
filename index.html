@@ -1,0 +1,63 @@
+#include <Arduino.h>
+
+    // Define pin connections
+    const int soilMoisturePin = A0;
+    const int relayPin = 8;
+    const int ledLowPin = 9;
+    const int ledMediumPin = 10;
+    const int ledHighPin = 11;
+    const int highBuzzPin = 12;
+    
+    // Define moisture level thresholds
+    const int lowMoistureThreshold = 700;
+    const int mediumMoistureThreshold = 400;
+    
+    // Set up variables
+    int moistureLevel;
+    
+    void setup() {
+      // Set pin modes
+      pinMode(soilMoisturePin, INPUT);
+      pinMode(relayPin, OUTPUT);
+      pinMode(ledLowPin, OUTPUT);
+      pinMode(ledMediumPin, OUTPUT);
+      pinMode(ledHighPin, OUTPUT);
+      pinMode(highBuzzPin, OUTPUT);
+    
+      // Start serial communication
+      Serial.begin(9600);
+    }
+    
+    void loop() {
+      // Read sensor value
+      moistureLevel = analogRead(soilMoisturePin);
+    
+      // Update LED based on moisture level
+      if (moistureLevel > lowMoistureThreshold) {
+        digitalWrite(ledLowPin, HIGH);
+        digitalWrite(ledMediumPin, LOW);
+        digitalWrite(ledHighPin, LOW);
+      } else if (moistureLevel < mediumMoistureThreshold) {
+        digitalWrite(ledLowPin, LOW);
+        digitalWrite(ledMediumPin, LOW);
+        digitalWrite(ledHighPin, HIGH);
+      } else {
+        digitalWrite(ledLowPin, LOW);
+        digitalWrite(ledMediumPin, HIGH);
+        digitalWrite(ledHighPin, LOW);
+      }
+    
+      // Water plants if moisture level is low
+      if (moistureLevel < lowMoistureThreshold) {
+        digitalWrite(relayPin, HIGH);
+        delay(5000); // Delay for 5 seconds
+        digitalWrite(relayPin, LOW);
+      }
+    
+      if (moistureLevel < mediumMoistureThreshold) {
+        tone(highBuzzPin, 1000);
+        delay(1000);
+        noTone(highBuzzPin);
+        delay(100);
+      }
+    }
